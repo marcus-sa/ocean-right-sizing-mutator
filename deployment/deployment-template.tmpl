@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocean-rs-mutator-deploy
+  namespace: kube-system
+  labels:
+    k8s-app: ocean-rs-mutator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: ocean-rs-mutator
+  template:
+    metadata:
+      labels:
+        k8s-app: ocean-rs-mutator
+    spec:
+      containers:
+        - name: ocean-rs-mutator
+          image: spotinst/ocean-rs-mutator:%VERSION%
+          imagePullPolicy: Always
+          args:
+            - -tls-cert-file=/etc/webhook/certs/cert.pem
+            - -tls-private-key-file=/etc/webhook/certs/key.pem
+            - -v=5
+            - -v=%VERBOSITY%
+          env:
+            - name: SPOTINST_ACCOUNT
+              valueFrom:
+                configMapKeyRef:
+                  name: spotinst-kubernetes-cluster-controller-config
+                  key: spotinst.account
+            - name: SPOTINST_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: spotinst-kubernetes-cluster-controller-config
+                  key: spotinst.token
+            - name: SPOTINST_CONTROLLER_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: spotinst-kubernetes-cluster-controller-config
+                  key: spotinst.cluster-identifier
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /etc/webhook/certs
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: %SECRET-CERT%

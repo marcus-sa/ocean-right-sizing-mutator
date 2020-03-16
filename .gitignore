@@ -1,0 +1,14 @@
+# artifacts
+tls
+deployment/*.yaml
+dist*
+
+
+# jetbrains
+.idea
+
+# vscode
+.vscode
+
+# macOS
+.DS_Store
