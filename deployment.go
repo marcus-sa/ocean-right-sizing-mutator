@@ -31,7 +31,7 @@ const (
 	defaultMEM int = 256
 
 	defaultAllowedCPURatio float64 = 0.2
-	defaultAllowedMEMRatio float64 = 0
+	defaultAllowedMEMRatio float64 = 0.2
 
 	deploymentPatchExample string = `[
 {

@@ -1,6 +1,6 @@
 # Spot Resource Mutator
 
-Spot resource mutator is a server which intercepts API requests and validates resource requirements definition within the Pod Spec. 
+Spot resource mutator is a server which intercepts API requests and validates resource requirements definition within the Pod Spec.
 
 This is done by configuring the [dynamic admission controller](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) to send webhook mutating requests to this server before the request is being persisted in K8s. The server integrates with your Spot account and validates the resource requirements defined by the user. If there is no definition, the resource will be mutated with the appropriate values from the Spot backend recommended by Ocean.
 
@@ -8,20 +8,67 @@ This is done by configuring the [dynamic admission controller](https://kubernete
 
 **Requirements**
 
-* The target cluster must be integrated with [Ocean](https://spotinst.com/products/ocean/).
-* The mutator requires a Spot account ID from the previously installed Ocean controller.
+- The target cluster must be integrated with [Ocean](https://spotinst.com/products/ocean/).
+- The mutator requires a Spot account ID from the previously installed Ocean controller.
 
 The deployment process will generate a Self Signed Certificate and will create a secret in your cluster for the resource mutator server
 
-**Run** 
+**Run**
 
 ```bash
 make gencerts-deploy
 ```
 
+**Use**
+
+In order to use the Ocean Right-Sizing Mutator, all you need is to add the following annotation to your deployment file - `spotinst.io/mutate-resource: enabled`. The webhook server will handle this deployment and will mutate the resource requests with recommendations from [Ocean Right-Sizing API](https://api.spotinst.com/spotinst-api/ocean/ocean-cloud-api/ocean-for-aws/get-right-sizing-recommendations/).
+
+Here is an example of a deployment with the annotation above:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-backend
+  labels:
+    app: nodejs-backend
+  namespace: default
+  annotations:
+    spotinst.io/mutate-resource: enabled
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs-backend
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nodejs-backend
+    spec:
+      containers:
+        - image: tduek/nodejs-demo:latest
+          imagePullPolicy: Always
+          name: nodejs-backend
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "200m"
+            limits:
+              memory: "256Mi"
+              cpu: "400m"
+```
+
 ## Run locally
 
-To run the command locally, create the certs for the server:
+To run the webhook server locally, create the certs for the server:
 
 ```bash
 make gencerts-deploy
@@ -33,7 +80,8 @@ In addition to the certs above, the following ENV VARs should be set:
 - SPOTINST_TOKEN - token for Spot API
 - SPOTINST_ACCOUNT - Spot account which the ocean cluster exists in
 
+With the above environment variables set, run the server with:
+
 ```bash
-make gencerts-deploy
 make runlocal
 ```
