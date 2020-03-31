@@ -1,30 +1,35 @@
 # Ocean Resource Mutator
 
-Spot resource mutator is a server which intercepts API requests and validates resource requirements definition within the Pod Spec.
+Spot resource mutator is a server which intercepts API requests and validates resource requirements definition within the Pod Spec. This is done by configuring the [dynamic admission controller](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) to send webhook mutating requests to this server before the request is being persisted in K8s. The server integrates with your Spot account and validates the resource requirements defined by the user. If there is no definition, the resource will be mutated with the appropriate values from the Spot backend recommended by Ocean.
 
-This is done by configuring the [dynamic admission controller](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) to send webhook mutating requests to this server before the request is being persisted in K8s. The server integrates with your Spot account and validates the resource requirements defined by the user. If there is no definition, the resource will be mutated with the appropriate values from the Spot backend recommended by Ocean.
+## Contents
 
-## Deploy
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Run Locally](#run-locally)
+- [Documentation](#documentation)
+- [Getting Help](#getting-help)
+- [Community](#community)
+- [Contributing](#contributing)
+- [License](#license)
 
-### Requirements
+## Requirements
 
-- The target cluster must be integrated with [Ocean](https://spotinst.com/products/ocean/).
+- The target cluster must be integrated with [Ocean](https://spot.io/products/ocean/).
 - The mutator requires a Spot account ID from the previously installed Ocean controller.
 
 The deployment process will generate a Self Signed Certificate and will create a secret in your cluster for the resource mutator server
-
-### Run
 
 ```bash
 make gencerts-deploy
 ```
 
-### Use
+## Installation
 
 To use the Ocean Right-Sizing Mutator, you need to perform the following 2 small changes:
 
 1. Add the following `label: value` to any Namespace that you want the mutating webhook to intercept - `ocean-rs-mutator: enabled`. Only Namespaces with this label will be processed as part of the mutating webhook configuration (see file - [mutatingwebhook-template.tmpl](./deployment/mutatingwebhook-template.tmpl))
-2. Add the following annotation to your deployment file - `spotinst.io/mutate-resource: enabled`. The webhook server will only mutate deployment that contains this label. The webhook server will mutate the resource requests with recommendations from [Ocean Right-Sizing API](https://api.spotinst.com/spotinst-api/ocean/ocean-cloud-api/ocean-for-aws/get-right-sizing-recommendations/).
+2. Add the following annotation to your deployment file - `spotinst.io/mutate-resource: enabled`. The webhook server will only mutate deployment that contains this label. The webhook server will mutate the resource requests with recommendations from [Ocean Right-Sizing API](https://help.spot.io/spotinst-api/ocean/ocean-cloud-api/ocean-for-aws/get-right-sizing-recommendations/).
 
 Here is an example of a deployment with the annotation above:
 
@@ -69,7 +74,7 @@ spec:
               cpu: "400m"
 ```
 
-## Run locally
+## Run Locally
 
 To run the webhook server locally, create the certs for the server:
 
@@ -77,7 +82,7 @@ To run the webhook server locally, create the certs for the server:
 make gencerts-deploy
 ```
 
-In addition to the certs above, the following ENV VARs should be set:
+In addition to the certs above, the following environment variables should be set:
 
 - SPOTINST_CONTROLLER_ID - the controller id for the Ocean cluster
 - SPOTINST_TOKEN - token for Spot API
@@ -88,3 +93,28 @@ With the above environment variables set, run the server with:
 ```bash
 make runlocal
 ```
+
+## Documentation
+
+For a comprehensive documentation, check out the [API documentation](https://help.spot.io/).
+
+## Getting Help
+
+We use GitHub issues for tracking bugs and feature requests. Please use these community resources for getting help:
+
+- Ask a question on [Stack Overflow](https://stackoverflow.com/) and tag it with [ocean-right-sizing-mutator](https://stackoverflow.com/questions/tagged/ocean-right-sizing-mutator/).
+- Join our Spotinst community on [Slack](http://slack.spot.io/).
+- Open an [issue](https://github.com/spotinst/ocean-right-sizing-mutator/issues/new/choose/).
+
+## Community
+
+- [Slack](http://slack.spot.io/)
+- [Twitter](https://twitter.com/spot_hq/)
+
+## Contributing
+
+Please see the [contribution guidelines](.github/CONTRIBUTING.md).
+
+## License
+
+Code is licensed under the [Apache License 2.0](LICENSE). See [NOTICE.md](NOTICE.md) for complete details, including software and third-party licenses and permissions.
