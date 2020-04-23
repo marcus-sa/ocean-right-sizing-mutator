@@ -243,7 +243,8 @@ func resourceSuggestions(deployment, namespace string) (*corev1.ResourceList, er
 func oceanResourceSuggestions(context context.Context, svc *ocean.ServiceOp, ocean *aws.Cluster, deployment, namespace string) (*corev1.ResourceList, error) {
 
 	rsSuggetsions, err := svc.CloudProviderAWS().ListResourceSuggestions(context, &aws.ListResourceSuggestionsInput{
-		OceanID: ocean.ID,
+		OceanID:   ocean.ID,
+		Namespace: &namespace,
 	})
 
 	if err != nil {
@@ -252,7 +253,7 @@ func oceanResourceSuggestions(context context.Context, svc *ocean.ServiceOp, oce
 	}
 
 	for _, suggestion := range rsSuggetsions.Suggestions {
-		if *suggestion.DeploymentName == deployment && *suggestion.Namespace == namespace {
+		if *suggestion.DeploymentName == deployment {
 			klog.V(4).Infof("Found deployment=%s", *suggestion.DeploymentName)
 
 			if suggestion.SuggestedCPU != nil && suggestion.SuggestedMemory == nil {
