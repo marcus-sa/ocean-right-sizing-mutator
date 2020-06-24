@@ -1,4 +1,4 @@
-apiVersion: admissionregistration.k8s.io/v1beta1
+apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: ocean-rs-mutator-webhook-cfg
@@ -17,6 +17,9 @@ webhooks:
         apiGroups: ["apps"]
         apiVersions: ["v1"]
         resources: ["deployments"]
+    objectSelector:
+      matchLabels:
+        spot.io/mutate-resource: enabled
     namespaceSelector:
       matchLabels:
-        ocean-rs-mutator: enabled
+        spot.io/mutate-resource: enabled    

@@ -28,8 +28,8 @@ make gencerts-deploy
 
 To use the Ocean Right-Sizing Mutator, you need to perform the following 2 small changes:
 
-1. Add the following `label: value` to any Namespace that you want the mutating webhook to intercept - `ocean-rs-mutator: enabled`. Only Namespaces with this label will be processed as part of the mutating webhook configuration (see file - [mutatingwebhook-template.tmpl](./deployment/mutatingwebhook-template.tmpl))
-2. Add the following annotation to your deployment file - `spotinst.io/mutate-resource: enabled`. The webhook server will only mutate deployment that contains this label. The webhook server will mutate the resource requests with recommendations from [Ocean Right-Sizing API](https://help.spot.io/spotinst-api/ocean/ocean-cloud-api/ocean-for-aws/get-right-sizing-recommendations/).
+1. Add the following `label: value` to any Namespace that you want the mutating webhook to intercept - `spot.io/mutate-resource: enabled`. Only Namespaces with this label will be processed as part of the mutating webhook configuration (see file - [mutatingwebhook-template.tmpl](./deployment/mutatingwebhook-template.tmpl))
+2. Add the following label to your deployment file - `spot.io/mutate-resource: enabled`. The webhook server will only get tomutate deployment that contains this label (based on the `MutatingWebhookConfiguration` object configured while deploying the webhook). The webhook server will mutate the resource requests with recommendations from [Ocean Right-Sizing API](https://help.spot.io/spotinst-api/ocean/ocean-cloud-api/ocean-for-aws/get-right-sizing-recommendations/).
 
 Here is an example of a deployment with the annotation above:
 
@@ -40,9 +40,8 @@ metadata:
   name: nodejs-backend
   labels:
     app: nodejs-backend
+    spot.io/mutate-resource: enabled
   namespace: default
-  annotations:
-    spotinst.io/mutate-resource: enabled
 spec:
   replicas: 1
   selector:
